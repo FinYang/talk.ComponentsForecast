@@ -87,3 +87,9 @@ if(file.exists(raw_path("tourism_mcb.qs"))){
   qs::qsave(mcb_pdata_top3, "data/mcb_pdata_top3.qs")
 
 }
+
+
+
+if(file.exists(raw_path("pca.qs"))) {
+  file.copy(raw_path("pca.qs"), "data/pca.qs", overwrite = TRUE)
+}

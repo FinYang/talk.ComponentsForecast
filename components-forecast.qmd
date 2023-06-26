@@ -1,5 +1,5 @@
 ---
-title: "Component-based Approach in Multivariate and Hierarchical Forecasting"
+title: "Forecast Multivariate Time Series Using Lower Dimensional Components"
 author: [
     "Yangzhuoran Fin Yang",
     "Rob J Hyndman",
@@ -25,6 +25,10 @@ header-includes:
   - \setlength{\cslhangindent}{1.5em}
   - \newenvironment{CSLReferences}[2]{\everypar{\setlength{\hangindent}{\cslhangindent}}\ignorespaces}{}
 titlefontsize: 18
+knitr:
+   opts_chunk: 
+     out-width: 100%
+     out-height: 100%
 ---
 
 ## What people do
@@ -240,7 +244,7 @@ ggsave("plot/p_aus_mel.pdf", p_aus_mel,
 # Sys.getlocale()
 ```
 
-* Australia comprises seven states and territories which can be divided into 76 regions
+* The data include tourism information on seven states and territories which can be divided into 77 regions
   - For example, Melbourne, Sydney, East Coast
 
 ### Visitor nights
@@ -267,7 +271,7 @@ The total number of nights spent by Australians away from home recorded monthly
 1. Better signal-noise ratio in the linear combination.
 
 \pause
-2. Similar patterns are shared in different series.
+2. Similar patterns are shared by different series.
 \end{block}
 
 \pause
@@ -442,31 +446,38 @@ $$\underset{T\times k}{\bm{Y}}\underset{k\times q}{\bm{W}}=\underset{T\times q}{
 where $\bm{C}$ is the first $q$ components, $\bm{W}$ is the weighting matrix.
 
 
----
 
 ### Principal Component Analysis (PCA)
 
-Finding the weights matrix so that the resulting components \alert{\textbf{maximise variance}}:
-$$\begin{aligned}
-\widehat{\bm{w}}_{s}=& \underset{\bm{w} \in \mathbb{R}^{k}}{\text{argmax} } ||\bm{Y}\bm{w}||_2, \quad s=1, \ldots, q \\
-\text { subject to } \bm{Y}\bm{w}_{s}  & \perp\left\{\bm{Y} \bm{w}_{1}, \ldots, \bm{Y}\bm{w}_{s-1} \right\},
-\end{aligned}$$
-where $\bm{Y}$ is centred and $||\cdot||_2$ denotes the L2 norm.
+Finding the weights matrix so that the resulting components \alert{\textbf{maximise variance}}
 
 ---
 
 ### Forecastable Component (ForeC)
 
-Forecastable components [@Goerg2013-yu] maximise \alert{forecastability} $\Omega(\cdot)$, finding linear combinations with \alert{most regular patterns}:
-$$\begin{aligned}
-\widehat{\mathbf{w}}_{s}=& \underset{\mathbf{w} \in \mathbb{R}^{k} \times 1}{\text{argmax} } \left(\Omega(\mathbf{Y}\mathbf{w} \right)), \quad s=1, \ldots, q \\
-\text { subject to } \mathbf{Y}\mathbf{w}_{s}  & \perp\left\{\mathbf{Y} \mathbf{w}_{1}, \ldots, \mathbf{Y}\mathbf{w}_{s-1} \right\},
-\end{aligned}$$
-and
-$$
-\Omega\left(y_{t}\right)=1-H\left(y_{t}\right),
-$$
-where $H(y_t)$ is The Shannon entropy [@Shannon1948-bo] of the spectral density of $y_t$
+```{r}
+data_cluster <- qs::qread("data/clustering.qs")
+p_forec <- data_cluster %>% 
+  slice_min(..id) %>% 
+  slice_min(.id) %>% 
+  slice_min(name) %>% 
+  select(Month, component, value) %>%
+  mutate(component = gsub("Component", "", component) %>% 
+           factor(levels = 1:10)) %>% 
+  filter(as.numeric(component) <= 3) %>% 
+  ggplot(aes(x = Month, y = value)) +
+  geom_line() +
+  facet_grid("component")+
+  theme(axis.title = element_blank(), 
+        plot.background = element_rect(fill = "#D9D9D9", colour = "#D9D9D9"), 
+        axis.text.y = element_blank())
+ggsave("plot/p_forec.pdf", p_forec,
+       height = unit(3.5, "cm"),
+       width = unit(10 / 1.4, "cm")
+)
+```
+Forecastable components [@Goerg2013-yu] maximise \alert{forecastability}, finding linear combinations with \alert{most regular patterns}
+\centerline{\includegraphics[width=\linewidth]{plot/p_forec}}
 
 ## 1. Component: Nonlinear
 
@@ -832,7 +843,7 @@ ggsave("plot/p_backtransform.pdf", p_backtransform,
     - Separating series into trend, seasonality and the stationary remainder
 1. Moving Block Bootstrap (MBB)
     - Bootstrapping stationary remainder
-1. Adding back trend and seasonality. Inverting Box Cox transformation.
+1. Adding back trend and seasonality. Reversing Box Cox transformation.
 
 ## STL Decomposition
 
@@ -954,83 +965,6 @@ ggsave("plot/p_mmb.pdf", p_mmb,
 \includegraphics[width=\linewidth]{plot/p_mmb}
 \end{center}
 
-## Overview
-
-```{r}
-p_timeline_notation <- p_timeline +
-  annotate("label", 
-           x = x_future, y = y_top, label = "hat(bold(y))[T+h]", vjust = -.2, parse = TRUE, size = 5) +
-  annotate("label", 
-           x = x_future, y = y_bottom, label = "hat(bold(c))[T+h]", vjust = -.2, parse = TRUE, size = 5)
-
-
-ggsave("plot/p_timeline_notation.pdf", p_timeline_notation,
-       height = unit(6 / 1.4, "cm"),
-       width = unit(10 / 1.4, "cm")
-)
-```
-
-\begin{center}
-\includegraphics[width=\linewidth]{plot/p_timeline_notation}
-\end{center}
-
-## Construct Training Set
-
-```{r}
-
-p_backtransform_notation <- p_backtransform +
-  annotate("label", 
-           x = x_now, 
-           y = y_top - sec_gap - 0.5 * rect_height, 
-           label = "bold(Y)^B", 
-           vjust = -.5, parse = TRUE, size = 5) +
-  annotate("label", 
-           x = x_now, 
-           y = y_top - 2 * sec_gap - 0.5 * rect_height, 
-           label = "hat(bold(C))[h]^B", 
-           vjust = -.3, parse = TRUE, size = 5)
-
-ggsave("plot/p_backtransform_notation.pdf",
-       p_backtransform_notation,
-       height = unit(6 / 1.4, "cm"),
-       width = unit(10 / 1.4, "cm")
-)
-```
-
-\begin{center}
-\includegraphics[width=\linewidth]{plot/p_backtransform_notation}
-\end{center}
-
-
-## Back-transformation Model
-
-* $\hat{\bm{C}}^\mathsf{B}_h$: $h$-step-ahead forecasts of components from different bootstraps at different lags
-* $\bm{Y}^\mathsf{B}$: the corresponding "real" values of the original series from bootstraps
-* $\hat{\bm{c}}_{T+h}$: $h$-step-ahead forecasts of components of the original series
-* $\hat{\bm{y}}_{T+h}$: $h$-step-ahead forecasts of the original series
-* $\bm{S}$: collection of seasonal dummies corresponding to $\hat{\bm{C}}^\mathsf{B}_h$
-* $\bm{s}_{T+h}$: seasonal dummies at time $T+h$
-* $\bm{X} = \begin{bmatrix}\hat{\bm{C}}^\mathsf{B}_h & \bm{S}\end{bmatrix}$ 
-
-## Back-transformation Model
-
-$$
-\hat{\bm{y}}_{T+h} = 
-f(\hat{\bm{c}}_{T + h}, \bm{s}_{T+h})
-$$ 
-
-### Discounted Least Squares (DLS)
-$$
-\hat{\bm{y}}_{T+h} = 
-\hat{\bm{B}}'
-\begin{bmatrix}
-\hat{\bm{c}}_{T + h} \\ \bm{s}_{T+h}
-\end{bmatrix}
-$$ 
-
-$$
-\hat{\bm{B}} = (\bm{X}'\bm{U}\bm{X})^{-1}\bm{X}'\bm{U}\bm{Y}^\mathsf{B}, 
-$$
 
 
 
@@ -1049,7 +983,7 @@ $$
 
 ### Multiple Comparisons with the Best (MCB)
 
-Compare Average ranks of mRMSSE from independent simulation or cross-validations [@Koning2005-ch]
+Compare Average ranks of mRMSSE in cross-validations [@Koning2005-ch]
 
 ### Forecast model
 Automatically selected ExponenTial Smoothing (ETS) model using AICc
@@ -1057,7 +991,13 @@ Automatically selected ExponenTial Smoothing (ETS) model using AICc
 
 
 
-## Australian tourism: PCA
+
+
+
+
+## Australian tourism
+
+
 ```{r}
 plot_mcb <- function(df){
   df %>%
@@ -1095,6 +1035,7 @@ plot_mcb <- function(df){
 
 
 ```{r}
+#| fig-align: center
 mcb_pdata_top3 <- qs::qread("data/mcb_pdata_top3.qs")
 mcb_pdata_top3 %>%
   arrange(value) %>%
@@ -1103,23 +1044,33 @@ mcb_pdata_top3 %>%
   group_by(h) %>%
   plot_mcb() +
   facet_wrap("h", scales = "free",
-             labeller = purrr::partial(label_both, sep = " = "))
+             labeller = purrr::partial(label_both, sep = " = ")) +
+  theme(plot.background = element_blank(), 
+          text = element_text(size = 18),
+          strip.text = element_text(size = 15)) +
+  ggtitle(latex2exp::TeX(r"(\{Component\}\ \{Model\}\{$\delta$\}\_\{No. comp\})"))
 
 
 ```
 
-## Conclusion
+
+
+## Outcome
 
 * Generic method to forecast using lower dimensional components with arbitrary choices of components and forecast models
 
 * Robust to the number of components
 
-* PCA and ISOMAP are competitive in short-term forecasts
-* Laplacian Eigenmaps show better performance in longer-term forecasts
+* PCA and ISOMAP are most competitive 
+
+* Random forest works best for longer term forecast. Linear models work best for short term forecast.
 
 
 
 # Appendix
+
+
+
 
 ## Isomap
 
@@ -1322,6 +1273,86 @@ ggsave("plot/p_cluster_after.pdf", p_cluster_after,
 \end{center}
 
 
+## Overview
+
+```{r}
+p_timeline_notation <- p_timeline +
+  annotate("label", 
+           x = x_future, y = y_top, label = "hat(bold(y))[T+h]", vjust = -.2, parse = TRUE, size = 5) +
+  annotate("label", 
+           x = x_future, y = y_bottom, label = "hat(bold(c))[T+h]", vjust = -.2, parse = TRUE, size = 5)
+
+
+ggsave("plot/p_timeline_notation.pdf", p_timeline_notation,
+       height = unit(6 / 1.4, "cm"),
+       width = unit(10 / 1.4, "cm")
+)
+```
+
+\centerline{
+\includegraphics[width=\linewidth]{plot/p_timeline_notation}
+}
+
+
+## Construct Training Set
+
+```{r}
+
+p_backtransform_notation <- p_backtransform +
+  annotate("label", 
+           x = x_now, 
+           y = y_top - sec_gap - 0.5 * rect_height, 
+           label = "bold(Y)^B", 
+           vjust = -.5, parse = TRUE, size = 5) +
+  annotate("label", 
+           x = x_now, 
+           y = y_top - 2 * sec_gap - 0.5 * rect_height, 
+           label = "hat(bold(C))[h]^B", 
+           vjust = -.3, parse = TRUE, size = 5)
+
+ggsave("plot/p_backtransform_notation.pdf",
+       p_backtransform_notation,
+       height = unit(6 / 1.4, "cm"),
+       width = unit(10 / 1.4, "cm")
+)
+```
+
+\begin{center}
+\includegraphics[width=\linewidth]{plot/p_backtransform_notation}
+\end{center}
+
+
+## Back-transformation Model
+
+* $\hat{\bm{C}}^\mathsf{B}_h$: $h$-step-ahead forecasts of components from different bootstraps at different lags
+* $\bm{Y}^\mathsf{B}$: the corresponding "real" values of the original series from bootstraps
+* $\hat{\bm{c}}_{T+h}$: $h$-step-ahead forecasts of components of the original series
+* $\hat{\bm{y}}_{T+h}$: $h$-step-ahead forecasts of the original series
+* $\bm{S}$: collection of seasonal dummies corresponding to $\hat{\bm{C}}^\mathsf{B}_h$
+* $\bm{s}_{T+h}$: seasonal dummies at time $T+h$
+* $\bm{X} = \begin{bmatrix}\hat{\bm{C}}^\mathsf{B}_h & \bm{S}\end{bmatrix}$ 
+
+## Back-transformation Model
+
+$$
+\hat{\bm{y}}_{T+h} = 
+f(\hat{\bm{c}}_{T + h}, \bm{s}_{T+h})
+$$ 
+
+### Discounted Least Squares (DLS)
+$$
+\hat{\bm{y}}_{T+h} = 
+\hat{\bm{B}}'
+\begin{bmatrix}
+\hat{\bm{c}}_{T + h} \\ \bm{s}_{T+h}
+\end{bmatrix}
+$$ 
+
+$$
+\hat{\bm{B}} = (\bm{X}'\bm{U}\bm{X})^{-1}\bm{X}'\bm{U}\bm{Y}^\mathsf{B}, 
+$$
+
+
 ## Discounted Least Squares (DLS)
 
 $$
@@ -1357,6 +1388,33 @@ ggsave("plot/p_dls.pdf", p_dls,
 \begin{center}
 \includegraphics[width=\linewidth]{plot/p_dls}
 \end{center}
+
+## Australian tourism: PCA
+
+```{r}
+#| fig-align: center
+#| out-width: 100%
+#| out-height: 100%
+comp <- qs::qread("data/pca.qs")
+
+comp %>%
+  mutate(component = gsub("Component", "", component) %>%
+           factor(levels = paste0(1:10)),
+         type = recode(type,
+                       fc = "Forecast",
+                       real = "Component")) %>%
+  ggplot(aes(x = Month, y = value, group = ..id, colour = type)) +
+  geom_line(alpha = 0.3) +
+  theme(legend.title = element_blank(),
+        legend.position = "bottom",
+        axis.text.y = element_blank(), 
+        axis.title.y = element_blank(), 
+        plot.background = element_blank(),
+          text = element_text(size = 20),
+          strip.text = element_text(size = 15), 
+          legend.background = element_blank()) +
+  facet_grid("component", scales = "free")
+```
 
 ## Box Cox Transformation
 

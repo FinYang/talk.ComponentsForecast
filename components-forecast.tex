@@ -67,8 +67,8 @@
 
 
 \hypersetup{
-      pdftitle={Component-based Approach in Multivariate and Hierarchical Forecasting},
-        pdfauthor={Yangzhuoran Fin Yang; Rob J. Hyndman; George Athanasopoulos; Anastasios Panagiotelis},
+      pdftitle={Forecast Multivariate Time Series Using Lower Dimensional Components},
+        pdfauthor={Yangzhuoran Fin Yang; Rob J Hyndman; George Athanasopoulos; Anastasios Panagiotelis},
           pdfborder={0 0 0},
     breaklinks=true}
 %\urlstyle{same}  % Use monospace font for urls
@@ -197,14 +197,14 @@
   \makeatletter
   \makeatother
 
-  \title[]{Component-based Approach in Multivariate and Hierarchical
-Forecasting}
+  \title[]{Forecast Multivariate Time Series Using Lower Dimensional
+Components}
 
 
   \author[
-        Yangzhuoran Fin Yang \and Rob J. Hyndman \and George
+        Yangzhuoran Fin Yang \and Rob J Hyndman \and George
 Athanasopoulos \and Anastasios Panagiotelis
-    ]{Yangzhuoran Fin Yang \newline Rob J. Hyndman \newline George
+    ]{Yangzhuoran Fin Yang \newline Rob J Hyndman \newline George
 Athanasopoulos \newline Anastasios Panagiotelis}
 
 
@@ -220,7 +220,7 @@ Athanasopoulos \newline Anastasios Panagiotelis}
   \titlepage
   \end{frame}
 
-  \ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[borderline west={3pt}{0pt}{shadecolor}, boxrule=0pt, sharp corners, frame hidden, breakable, enhanced, interior hidden]}{\end{tcolorbox}}\fi
+  \ifdefined\Shaded\renewenvironment{Shaded}{\begin{tcolorbox}[enhanced, interior hidden, frame hidden, sharp corners, borderline west={3pt}{0pt}{shadecolor}, boxrule=0pt, breakable]}{\end{tcolorbox}}\fi
 
 
 \begin{frame}{What people do}
@@ -238,8 +238,8 @@ Athanasopoulos \newline Anastasios Panagiotelis}
 \begin{itemize}
 \tightlist
 \item
-  Australia comprises seven states and territories which can be divided
-  into 76 regions
+  The data include tourism information on seven states and territories
+  which can be divided into 77 regions
 
   \begin{itemize}
   \tightlist
@@ -276,7 +276,7 @@ monthly
 1. Better signal-noise ratio in the linear combination.
 
 \pause
-2. Similar patterns are shared in different series.
+2. Similar patterns are shared by different series.
 \end{block}
 
 \pause
@@ -359,17 +359,11 @@ Taking the first \(q\) linear combinations
 \[\underset{T\times k}{\bm{Y}}\underset{k\times q}{\bm{W}}=\underset{T\times q}{\bm{C}},\]
 where \(\bm{C}\) is the first \(q\) components, \(\bm{W}\) is the
 weighting matrix.
-\end{frame}
 
-\begin{frame}
 \begin{block}{Principal Component Analysis (PCA)}
 \protect\hypertarget{principal-component-analysis-pca}{}
 Finding the weights matrix so that the resulting components
-\alert{\textbf{maximise variance}}: \[\begin{aligned}
-\widehat{\bm{w}}_{s}=& \underset{\bm{w} \in \mathbb{R}^{k}}{\text{argmax} } ||\bm{Y}\bm{w}||_2, \quad s=1, \ldots, q \\
-\text { subject to } \bm{Y}\bm{w}_{s}  & \perp\left\{\bm{Y} \bm{w}_{1}, \ldots, \bm{Y}\bm{w}_{s-1} \right\},
-\end{aligned}\] where \(\bm{Y}\) is centred and \(||\cdot||_2\) denotes
-the L2 norm.
+\alert{\textbf{maximise variance}}
 \end{block}
 \end{frame}
 
@@ -377,14 +371,10 @@ the L2 norm.
 \begin{block}{Forecastable Component (ForeC)}
 \protect\hypertarget{forecastable-component-forec}{}
 Forecastable components \citep{Goerg2013-yu} maximise
-\alert{forecastability} \(\Omega(\cdot)\), finding linear combinations
-with \alert{most regular patterns}: \[\begin{aligned}
-\widehat{\mathbf{w}}_{s}=& \underset{\mathbf{w} \in \mathbb{R}^{k} \times 1}{\text{argmax} } \left(\Omega(\mathbf{Y}\mathbf{w} \right)), \quad s=1, \ldots, q \\
-\text { subject to } \mathbf{Y}\mathbf{w}_{s}  & \perp\left\{\mathbf{Y} \mathbf{w}_{1}, \ldots, \mathbf{Y}\mathbf{w}_{s-1} \right\},
-\end{aligned}\] and \[
-\Omega\left(y_{t}\right)=1-H\left(y_{t}\right),
-\] where \(H(y_t)\) is The Shannon entropy \citep{Shannon1948-bo} of the
-spectral density of \(y_t\)
+\alert{forecastability}, finding linear combinations with
+\alert{most regular patterns}
+
+\centerline{\includegraphics[width=\linewidth]{plot/p_forec}}
 \end{block}
 \end{frame}
 
@@ -486,7 +476,7 @@ points (relative locations of points) on a manifold
     Bootstrapping stationary remainder
   \end{itemize}
 \item
-  Adding back trend and seasonality. Inverting Box Cox transformation.
+  Adding back trend and seasonality. Reversing Box Cox transformation.
 \end{enumerate}
 \end{block}
 \end{frame}
@@ -503,69 +493,6 @@ points (relative locations of points) on a manifold
 \end{center}
 \end{frame}
 
-\begin{frame}{Overview}
-\protect\hypertarget{overview-2}{}
-\begin{center}
-\includegraphics[width=\linewidth]{plot/p_timeline_notation}
-\end{center}
-\end{frame}
-
-\begin{frame}{Construct Training Set}
-\protect\hypertarget{construct-training-set-1}{}
-\begin{center}
-\includegraphics[width=\linewidth]{plot/p_backtransform_notation}
-\end{center}
-\end{frame}
-
-\begin{frame}{Back-transformation Model}
-\protect\hypertarget{back-transformation-model}{}
-\begin{itemize}
-\tightlist
-\item
-  \(\hat{\bm{C}}^\mathsf{B}_h\): \(h\)-step-ahead forecasts of
-  components from different bootstraps at different lags
-\item
-  \(\bm{Y}^\mathsf{B}\): the corresponding ``real'' values of the
-  original series from bootstraps
-\item
-  \(\hat{\bm{c}}_{T+h}\): \(h\)-step-ahead forecasts of components of
-  the original series
-\item
-  \(\hat{\bm{y}}_{T+h}\): \(h\)-step-ahead forecasts of the original
-  series
-\item
-  \(\bm{S}\): collection of seasonal dummies corresponding to
-  \(\hat{\bm{C}}^\mathsf{B}_h\)
-\item
-  \(\bm{s}_{T+h}\): seasonal dummies at time \(T+h\)
-\item
-  \(\bm{X} = \begin{bmatrix}\hat{\bm{C}}^\mathsf{B}_h & \bm{S}\end{bmatrix}\)
-\end{itemize}
-\end{frame}
-
-\begin{frame}{Back-transformation Model}
-\protect\hypertarget{back-transformation-model-1}{}
-\[
-\hat{\bm{y}}_{T+h} = 
-f(\hat{\bm{c}}_{T + h}, \bm{s}_{T+h})
-\]
-
-\begin{block}{Discounted Least Squares (DLS)}
-\protect\hypertarget{discounted-least-squares-dls}{}
-\[
-\hat{\bm{y}}_{T+h} = 
-\hat{\bm{B}}'
-\begin{bmatrix}
-\hat{\bm{c}}_{T + h} \\ \bm{s}_{T+h}
-\end{bmatrix}
-\]
-
-\[
-\hat{\bm{B}} = (\bm{X}'\bm{U}\bm{X})^{-1}\bm{X}'\bm{U}\bm{Y}^\mathsf{B}, 
-\]
-\end{block}
-\end{frame}
-
 \begin{frame}{Results}
 \protect\hypertarget{results}{}
 \begin{block}{Performance Measure (cross-validation)}
@@ -580,8 +507,8 @@ mRMSSE = \frac{1}{Mk}\sum^{M}_j\sum^{k}_i
 
 \begin{block}{Multiple Comparisons with the Best (MCB)}
 \protect\hypertarget{multiple-comparisons-with-the-best-mcb}{}
-Compare Average ranks of mRMSSE from independent simulation or
-cross-validations \citep{Koning2005-ch}
+Compare Average ranks of mRMSSE in cross-validations
+\citep{Koning2005-ch}
 \end{block}
 
 \begin{block}{Forecast model}
@@ -590,13 +517,19 @@ Automatically selected ExponenTial Smoothing (ETS) model using AICc
 \end{block}
 \end{frame}
 
-\begin{frame}{Australian tourism: PCA}
-\protect\hypertarget{australian-tourism-pca}{}
-\includegraphics{components-forecast_files/figure-beamer/unnamed-chunk-11-1.pdf}
+\begin{frame}{Australian tourism}
+\protect\hypertarget{australian-tourism}{}
+\begin{figure}
+
+{\centering \includegraphics{components-forecast_files/figure-beamer/unnamed-chunk-10-1.pdf}
+
+}
+
+\end{figure}
 \end{frame}
 
-\begin{frame}{Conclusion}
-\protect\hypertarget{conclusion}{}
+\begin{frame}{Outcome}
+\protect\hypertarget{outcome}{}
 \begin{itemize}
 \item
   Generic method to forecast using lower dimensional components with
@@ -604,9 +537,10 @@ Automatically selected ExponenTial Smoothing (ETS) model using AICc
 \item
   Robust to the number of components
 \item
-  PCA and ISOMAP are competitive in short-term forecasts
+  PCA and ISOMAP are most competitive
 \item
-  Laplacian Eigenmaps show better performance in longer-term forecasts
+  Random forest works best for longer term forecast. Linear models work
+  best for short term forecast.
 \end{itemize}
 \end{frame}
 
@@ -717,6 +651,69 @@ Laplacian Eigenmaps, etc
 \end{center}
 \end{frame}
 
+\begin{frame}{Overview}
+\protect\hypertarget{overview-2}{}
+\centerline{
+\includegraphics[width=\linewidth]{plot/p_timeline_notation}
+}
+\end{frame}
+
+\begin{frame}{Construct Training Set}
+\protect\hypertarget{construct-training-set-1}{}
+\begin{center}
+\includegraphics[width=\linewidth]{plot/p_backtransform_notation}
+\end{center}
+\end{frame}
+
+\begin{frame}{Back-transformation Model}
+\protect\hypertarget{back-transformation-model}{}
+\begin{itemize}
+\tightlist
+\item
+  \(\hat{\bm{C}}^\mathsf{B}_h\): \(h\)-step-ahead forecasts of
+  components from different bootstraps at different lags
+\item
+  \(\bm{Y}^\mathsf{B}\): the corresponding ``real'' values of the
+  original series from bootstraps
+\item
+  \(\hat{\bm{c}}_{T+h}\): \(h\)-step-ahead forecasts of components of
+  the original series
+\item
+  \(\hat{\bm{y}}_{T+h}\): \(h\)-step-ahead forecasts of the original
+  series
+\item
+  \(\bm{S}\): collection of seasonal dummies corresponding to
+  \(\hat{\bm{C}}^\mathsf{B}_h\)
+\item
+  \(\bm{s}_{T+h}\): seasonal dummies at time \(T+h\)
+\item
+  \(\bm{X} = \begin{bmatrix}\hat{\bm{C}}^\mathsf{B}_h & \bm{S}\end{bmatrix}\)
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Back-transformation Model}
+\protect\hypertarget{back-transformation-model-1}{}
+\[
+\hat{\bm{y}}_{T+h} = 
+f(\hat{\bm{c}}_{T + h}, \bm{s}_{T+h})
+\]
+
+\begin{block}{Discounted Least Squares (DLS)}
+\protect\hypertarget{discounted-least-squares-dls}{}
+\[
+\hat{\bm{y}}_{T+h} = 
+\hat{\bm{B}}'
+\begin{bmatrix}
+\hat{\bm{c}}_{T + h} \\ \bm{s}_{T+h}
+\end{bmatrix}
+\]
+
+\[
+\hat{\bm{B}} = (\bm{X}'\bm{U}\bm{X})^{-1}\bm{X}'\bm{U}\bm{Y}^\mathsf{B}, 
+\]
+\end{block}
+\end{frame}
+
 \begin{frame}{Discounted Least Squares (DLS)}
 \protect\hypertarget{discounted-least-squares-dls-1}{}
 \[
@@ -726,6 +723,17 @@ u = \delta(1-\delta)^{\text{YearLag}}
 \begin{center}
 \includegraphics[width=\linewidth]{plot/p_dls}
 \end{center}
+\end{frame}
+
+\begin{frame}{Australian tourism: PCA}
+\protect\hypertarget{australian-tourism-pca}{}
+\begin{figure}
+
+{\centering \includegraphics[width=1\textwidth,height=1\textheight]{components-forecast_files/figure-beamer/unnamed-chunk-18-1.pdf}
+
+}
+
+\end{figure}
 \end{frame}
 
 \begin{frame}{Box Cox Transformation}
